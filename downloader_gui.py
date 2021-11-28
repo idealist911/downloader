@@ -28,21 +28,16 @@ class DloaderUI(qtWid.QMainWindow):
         title = "Downloader GUI"
         self.setWindowTitle(title)
         self.setFixedSize(800, 350) # Disable re-sizing
-        self.setStyleSheet('background-color:#CFFFFD')
+        # self.setStyleSheet('background-color:#CFFFFD')
     
         self._centralWidget = qtWid.QWidget(self)
         self.setCentralWidget(self._centralWidget)
-        self.generalLayout = qtWid.QVBoxLayout(self._centralWidget)
-        self._titleWidget = qtWid.QWidget(self._centralWidget)
-        self.titleLayout = qtWid.QHBoxLayout(self._titleWidget)
-        self.titleLayout.addWidget(qtWid.QLabel('Download IB PYP'))
-        self._titleWidget.setStyleSheet('background-color:#538BFE')
+        self.generalLayout = qtWid.QHBoxLayout()
+        # self.generalLayout.addWidget(qtWid.QLabel('Download IB PYP'))
 
         # Arrange the layout in a left-right then top-down fashion
-        self._mainWidget = qtWid.QWidget(self._centralWidget)
-        self.mainLayout = qtWid.QHBoxLayout(self._mainWidget)
-        self.leftLayout = qtWid.QVBoxLayout(self._mainWidget)
-        self.rightLayout = qtWid.QVBoxLayout(self._mainWidget)
+        self.leftLayout = qtWid.QVBoxLayout()
+        self.rightLayout = qtWid.QVBoxLayout()
         self.widgets = {}
 
         # Create a layout for each search parameter
@@ -55,9 +50,8 @@ class DloaderUI(qtWid.QMainWindow):
         
         # Merge the smaller layouts into the main layout
         self.rightLayout.addWidget(self.widgets['submit'])
-        self.mainLayout.addLayout(self.leftLayout)
-        self.mainLayout.addLayout(self.rightLayout)
-        self.generalLayout.addLayout(self.mainLayout)
+        self.generalLayout.addLayout(self.leftLayout)
+        self.generalLayout.addLayout(self.rightLayout)
         self._centralWidget.setLayout(self.generalLayout)
         
 
