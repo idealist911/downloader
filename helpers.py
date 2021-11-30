@@ -218,7 +218,7 @@ def renamePYP(paper, path=None):
     # If path to store the file is not specified,
     # store it in root directory, one level above where code is stored
     if path == None:
-        path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
+        path = os.path.dirname(__file__)
     
     year = paper["year"]  # in full e.g. 2019
     month = paper["month"].capitalize()  # May or Nov (First char uppercase)
@@ -241,7 +241,7 @@ def renamePYP(paper, path=None):
     # Generate new name for the paper.
     # No need to specify TZ for Nov papers and May 2016 papers
     newname = paperNameGen(paper)
-    os.rename(os.path.join(path, 'code', oldname),os.path.join(newpath, newname))
+    os.rename(os.path.join(path, oldname),os.path.join(newpath, newname))
 
 
 def sanity_check(paper):
