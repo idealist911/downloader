@@ -14,9 +14,8 @@ import helpers
 
 # Path to the Python file
 FILE_PATH = os.path.dirname(__file__)
-# Path to 1 folder above FILE_PATH
-# where the past year papers will be stored
-ROOT_DIR = os.path.realpath(os.path.join(FILE_PATH, '..'))
+# Path to where the past year papers will be stored
+ROOT_DIR = FILE_PATH
 
 # Create the View 
 class DloaderUI(qtWid.QMainWindow):
