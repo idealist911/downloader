@@ -27,12 +27,18 @@ class DloaderUI(qtWid.QMainWindow):
         title = "Downloader GUI"
         self.setWindowTitle(title)
         self.setFixedSize(800, 350) # Disable re-sizing
-        # self.setStyleSheet('background-color:#CFFFFD')
     
         self._centralWidget = qtWid.QWidget(self)
         self.setCentralWidget(self._centralWidget)
-        self.generalLayout = qtWid.QHBoxLayout()
-        # self.generalLayout.addWidget(qtWid.QLabel('Download IB PYP'))
+        bigLayout = qtWid.QVBoxLayout()
+        mainLayout = qtWid.QHBoxLayout()
+        titleLayout = qtWid.QHBoxLayout()
+        titleWidget = qtWid.QWidget()
+        titleWidget.setLayout(titleLayout)
+        titleLayout.addWidget(qtWid.QLabel('Download IB PYP'))
+        bigLayout.addWidget(titleWidget)
+        titleWidget.setStyleSheet('background-color:#3333FF; color:#FFFFFF')
+        bigLayout.addLayout(mainLayout)
 
         # Arrange the layout in a left-right then top-down fashion
         self.leftLayout = qtWid.QVBoxLayout()
@@ -49,9 +55,9 @@ class DloaderUI(qtWid.QMainWindow):
         
         # Merge the smaller layouts into the main layout
         self.rightLayout.addWidget(self.widgets['submit'])
-        self.generalLayout.addLayout(self.leftLayout)
-        self.generalLayout.addLayout(self.rightLayout)
-        self._centralWidget.setLayout(self.generalLayout)
+        mainLayout.addLayout(self.leftLayout)
+        mainLayout.addLayout(self.rightLayout)
+        self._centralWidget.setLayout(bigLayout)
         
 
     def _createKindLayout(self):
