@@ -143,6 +143,12 @@ def getPYP(paper):
            + year + "%20Examination%20Session/Experimental%20sciences/"
            + pname)
 
+    # For now, this year and month has an anomaly in the naming
+    if (month == 'May' and year == '2016'):
+        url = (url0 + year + "%20Examination%20Session/" + month + "%20"
+           + year + "%20Examination%20Session/Group%204%20-%20Experimental%20Sciences/"
+           + pname)
+
     # Generate get-request to the website
     try:
         r=requests.get(url)
@@ -208,7 +214,7 @@ def renamePYP(paper, path=None):
         path: the filepath to save the paper
         
     Returns:
-        None
+        int
         
     """
 
@@ -241,7 +247,12 @@ def renamePYP(paper, path=None):
     # Generate new name for the paper.
     # No need to specify TZ for Nov papers and May 2016 papers
     newname = paperNameGen(paper)
-    os.rename(os.path.join(path, oldname),os.path.join(newpath, newname))
+    if not os.path.isfile(os.path.join(newpath, newname)):
+        os.rename(os.path.join(path, oldname),os.path.join(newpath, newname))
+        return 0
+    else:
+        # File exists. Cannot override
+        return 1
 
 
 def sanity_check(paper):
