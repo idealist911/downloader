@@ -12,8 +12,8 @@ import os
 import helpers
 
 
-FILE_PATH = os.path.dirname(__file__)
-ROOT_DIR = os.path.realpath(os.path.join(FILE_PATH, '..'))
+FILE_PATH = os.path.abspath(".")
+ROOT_DIR = FILE_PATH
 INPUT_PATH = os.path.join(FILE_PATH, 'input.csv')
 
 # Get list of papers in dict form from csv file
