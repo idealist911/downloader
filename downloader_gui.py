@@ -7,13 +7,15 @@ from functools import partial
 import os
 import sys
 
+import PyQt5.QtCore as qtCore
 import PyQt5.QtWidgets as qtWid
 import PyQt5.QtGui as qtGUI
+from PyQt5.sip import delete
 
 import helpers
 
 # Path to the Python file
-FILE_PATH = os.path.dirname(__file__)
+FILE_PATH = os.path.abspath(".")
 # Path to where the past year papers will be stored
 ROOT_DIR = FILE_PATH
 
@@ -26,7 +28,7 @@ class DloaderUI(qtWid.QMainWindow):
         # Set window properties
         title = "Downloader GUI"
         self.setWindowTitle(title)
-        self.setFixedSize(800, 350) # Disable re-sizing
+        self.setFixedSize(800, 450) # Disable re-sizing
     
         self._centralWidget = qtWid.QWidget(self)
         self.setCentralWidget(self._centralWidget)
@@ -52,11 +54,13 @@ class DloaderUI(qtWid.QMainWindow):
         self._createTZLayout()
         self._createNumLayout()
         self.widgets['submit'] = qtWid.QPushButton('submit')
+        self.widgets['message'] = qtWid.QLabel('')
         
         # Merge the smaller layouts into the main layout
         self.rightLayout.addWidget(self.widgets['submit'])
         mainLayout.addLayout(self.leftLayout)
         mainLayout.addLayout(self.rightLayout)
+        bigLayout.addWidget(self.widgets['message'])
         self._centralWidget.setLayout(bigLayout)
         
 
@@ -137,7 +141,7 @@ class DloaderCtrller:
     
     def _connectSignals(self):
         for label, widget in self._view.widgets.items():
-            if label not in ['submit']:
+            if label not in ['submit', 'message']:
                 if isinstance(widget[0], qtWid.QCheckBox):
                     widget[0].stateChanged.connect(partial(self._addParam, widget[0], widget[1]))
 
@@ -210,27 +214,97 @@ class DloaderCtrller:
                             
                             papers.append(paper)
         
-        self._model(papers)
+        self.papers = papers
+        self._model(self)
+
+    
+    def reportProgress(self, n, N, message):
+        message = 'Status: ' + str(n) + '/' + str(N) + ' ' + '(' + message + ')'
+        self._view.widgets['message'].setText(message)
 
 
-def downloadPaper(papers):
-    """Downloader_GUI's Model"""
-    # Iterate over list of papers to download and rename them
-    for paper in papers:
-        r,pname = helpers.getPYP(paper)
-        error = helpers.downloadPYP(r, pname, paper)
-        papername = helpers.paperNameGen(paper)
-        if error:
-            message = "Not found:"
-            
-        else: 
-            helpers.renamePYP(paper, ROOT_DIR)
-            message = "Downloaded:"
-
-        message = message + ' ' + papername
+    def reportStatus(self,status):
+        self._view.widgets['submit'].setEnabled(True)
+        self._view.widgets['message'].setText('Status: Completed')
         alert = qtWid.QMessageBox()
-        alert.setText(message)
-        alert.exec_()
+        text = 'Summary:\n'
+        for i, (key, val) in enumerate(status.items()):
+            text = text + key + ' ' + val + '\n'
+        alert.setText(text)
+        alert.exec()
+
+
+# The model does not actually download paper but creates another thread.
+# Another class is called to then download the paper.
+# From: https://realpython.com/python-pyqt-qthread/
+def downloadPaper(controller):
+    """Downloader_GUI's Model"""
+
+    controller.thread = qtCore.QThread()
+    controller.worker = Worker(controller.papers, controller._view)
+    controller.worker.moveToThread(controller.thread)
+    controller.thread.started.connect(controller.worker.run)
+    controller.worker.finished.connect(controller.thread.quit)
+    controller.worker.finished.connect(controller.worker.deleteLater)
+    controller.thread.finished.connect(controller.thread.deleteLater)
+    controller.worker.progress.connect(controller.reportProgress)
+    controller.thread.start()
+
+    controller._view.widgets['submit'].setEnabled(False)
+    controller.thread.finished.connect(
+        lambda: controller._view.widgets['submit'].setEnabled(True)
+    )
+    controller.thread.finished.connect(
+        lambda: controller._view.widgets['message'].setText('Status: Completed')
+    )
+    controller.worker.finished.connect(controller.reportStatus)
+
+
+# Create a Worker class to handle the downloading of past year papers.
+# It is working on a different thread from the main GUI.
+# This ensures that the GUI does not freeze even when downloading.
+# Only the Submit button is deactivated during downloading.
+class Worker(qtCore.QObject):
+    """A QObject to download papers on a separate thread from the GUI."""
+
+    finished = qtCore.pyqtSignal(dict)
+    progress = qtCore.pyqtSignal(int, int, str)
+
+    def __init__(self, papers, view):
+        super().__init__()
+        self.papers = papers
+        self.view = view
+
+    def run(self):
+        self.downloadPaper(self.papers, self.view)
+
+    def downloadPaper(self,papers, view):
+        """Downloader_GUI's Model"""
+        status = {}
+        
+        # Iterate over list of papers to download and rename them
+        for i, paper in enumerate(papers):
+            N = len(papers)
+            r,pname = helpers.getPYP(paper)
+            error = helpers.downloadPYP(r, pname, paper)
+            papername = helpers.paperNameGen(paper)
+            if error:
+                status_message = "Not found"
+                
+            else: 
+                error = helpers.renamePYP(paper, ROOT_DIR)
+                if error:
+                    status_message = "File already exists"
+                else:
+                    status_message = "Downloaded"
+
+            message = status_message + ': ' + papername
+
+            self.progress.emit(i+1, N, message)
+            status[papername] = status_message
+            
+
+        self.finished.emit(status)
 
 
 def main():
