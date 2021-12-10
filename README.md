@@ -54,5 +54,17 @@ To be added:
 ## Background
 This project is created for the Final Project portion of CS50 course.
 I am a tuition teacher for IB physics students and I felt that this saves me time in downloading past year papers on the fly.
-Although a python script is enough for me, I thought that a GUI would benefit my colleagues who do not know python.
+Although a python script is enough for me, I thought that a GUI would benefit my colleagues who do not know Python.
 Besides, a python script is not much of a challenge for a project submission.
+
+There are mainly two ways to create a GUI in Python -- PyQt or Tkinter.
+A quick search on the internet reveals that PyQt is a better choice as the UI looks more modern and it comes with many advanced widgets.
+See:
+1. https://dev.to/amigosmaker/python-gui-pyqt-vs-tkinter-5hdd#:~:text=Mostly%2C%20Tkinter%20is%20all%20about,Python%20knowledge%20from%20another%20script.
+2. https://www.geeksforgeeks.org/python-gui-pyqt-vs-tkinter/
+
+But packaging a PyQt GUI (known as freezing) into an executable is painful.
+Pyinstaller is easy to use but it only packages the GUI into an executable for the OS which I package it with.
+In my case, that is Windows.
+To package it for Mac OS, I had to get a Mac OS virtual machine and package it there.
+During packaging, it seems that PyQt is not automatically detected by Pyinstaller so there is a need to make it explicit to Pyinstaller via --hidden-import.
